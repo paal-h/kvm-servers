@@ -2,6 +2,10 @@
 ```
 ./install.sh
 ```
+If docker fails to start:
+```
+sudo systemctl unmask docker
+```
 
 # Download images and start image server
 ```
@@ -38,6 +42,7 @@ user= {
 }
 EOF
 cd terraform
+terraform init
 terraform workspace new ubuntu-focal
 terraform apply -var-file=projects/ubuntu-focal/server.tfvars
 ```
