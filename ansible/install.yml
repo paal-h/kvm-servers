@@ -1,0 +1,82 @@
+- hosts: "localhost"
+  
+  vars:
+    user_id: "{{ lookup('env','USER') }}"
+    terraform_version: "0.14.3"
+    libvirt_provider_version: "0.6.3"
+    libvirt_provider_url: https://github.com/dmacvicar/terraform-provider-libvirt/releases/download/v{{ libvirt_provider_version }}/terraform-provider-libvirt-{{ libvirt_provider_version }}+git.1604843676.67f4f2aa.Ubuntu_20.04.amd64.tar.gz
+    libvirt_provider_dest: "/home/{{ user_id }}/.local/share/terraform/plugins/registry.terraform.io/dmacvicar/libvirt/{{ libvirt_provider_version }}/linux_amd64"
+
+    packages:
+      - docker.io
+      - docker-compose
+      - jq
+      - qemu
+      - qemu-kvm
+      - libvirt-daemon
+      - libvirt-clients
+      - bridge-utils
+      - virt-manager
+      - cloud-image-utils
+
+  tasks:
+  - name: Install packages
+    apt: name={{ packages }} state=latest update_cache=true
+    become: yes
+
+  - name: Enable and start services
+    service: name={{ item }} enabled=yes state=started
+    with_items:
+      - libvirtd
+      - docker
+    become: yes
+
+  - name: Disable security driver for qemu
+    replace:
+      path: /etc/libvirt/qemu.conf
+      regexp: "#security_driver = .*"
+      replace: 'security_driver = "none"'
+    register: qemu
+    become: yes
+
+  - name: Load module vhost_net
+    modprobe:
+      name: vhost_net
+      state: present
+    become: yes
+
+  - name: Add module vhost_net to boot
+    lineinfile:
+      path: /etc/modules
+      line: "vhost_net"
+      state: present
+    become: yes
+    
+  - name: Restart libvirtd
+    service: name=libvirtd state=restarted
+    become: yes
+    when: qemu.changed
+    
+  - name: Add existing user '{{ user_id }}' to groups
+    user: name={{ user_id }} groups=docker,libvirt,libvirtd,libvirt-qemu,libvirt-qemu,libvirt-dnsmasq append=yes
+    become: yes
+
+  - name: Install terraform
+    unarchive:
+      src: https://releases.hashicorp.com/terraform/{{ terraform_version }}/terraform_{{ terraform_version }}_linux_amd64.zip
+      dest: /usr/local/bin
+      remote_src: yes
+      owner: root
+      group: root
+      mode: 0755
+    become: yes
+
+  - name: Create libvirt provider directory
+    file: path={{ libvirt_provider_dest }} state=directory
+
+  - name: Install libvirt provider
+    unarchive:
+      src: "{{ libvirt_provider_url }}"
+      dest: "{{ libvirt_provider_dest }}"
+      remote_src: yes
+

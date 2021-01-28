@@ -1,0 +1,11 @@
+version: 2
+ethernets:
+  if0:
+    match:
+      macaddress: ${mac_address}
+    set-name: if0
+    addresses:
+      - ${ip_address}/${cidr_mask}
+    gateway4: ${network_gw}
+    nameservers:
+      addresses: [${network_ns}]
