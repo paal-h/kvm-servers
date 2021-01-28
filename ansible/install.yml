@@ -58,7 +58,7 @@
     when: qemu.changed
     
   - name: Add existing user '{{ user_id }}' to groups
-    user: name={{ user_id }} groups=docker,libvirt,libvirtd,libvirt-qemu,libvirt-qemu,libvirt-dnsmasq append=yes
+    user: name={{ user_id }} groups=docker,libvirt,libvirt-qemu,libvirt-qemu,libvirt-dnsmasq append=yes
     become: yes
 
   - name: Install terraform
