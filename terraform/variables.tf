@@ -94,7 +94,7 @@ variable "images" {
     type = map(string)
     default = {
         "ubuntu-focal" = "focal-server-cloudimg-amd64-disk-kvm.img"
-        "centos-7" = "CentOS-7-x86_64-GenericCloud-2009.qcow2"
+        "ubuntu-jammy" = "jammy-server-cloudimg-amd64-disk-kvm.img"
     }
     description = "Map of server images"
 }

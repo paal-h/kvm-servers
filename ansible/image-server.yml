@@ -3,9 +3,8 @@
   vars:
     project_dir: "/home/{{ ansible_user_id }}/kvm-servers"
     images:
-      - https://cloud-images.ubuntu.com/daily/server/daily/server/focal/current/focal-server-cloudimg-amd64-disk-kvm.img
-      - https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud-2009.qcow2
-  
+      - https://cloud-images.ubuntu.com/daily/server/focal/current/focal-server-cloudimg-amd64-disk-kvm.img
+      - https://cloud-images.ubuntu.com/daily/server/jammy/current/jammy-server-cloudimg-amd64-disk-kvm.img
   tasks:
   - name: Create image directory
     file: path={{ project_dir }}/images state=directory
@@ -14,6 +13,7 @@
     docker_container:
       name: kvm-images
       image: nginx:latest
+      container_default_behavior: no_defaults
       state: started
       ports:
       - "8080:80"

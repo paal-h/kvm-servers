@@ -2,14 +2,9 @@
   
   vars:
     user_id: "{{ lookup('env','USER') }}"
-    terraform_version: "0.14.3"
-    libvirt_provider_version: "0.6.3"
-    libvirt_provider_url: https://github.com/dmacvicar/terraform-provider-libvirt/releases/download/v{{ libvirt_provider_version }}/terraform-provider-libvirt-{{ libvirt_provider_version }}+git.1604843676.67f4f2aa.Ubuntu_20.04.amd64.tar.gz
-    libvirt_provider_dest: "/home/{{ user_id }}/.local/share/terraform/plugins/registry.terraform.io/dmacvicar/libvirt/{{ libvirt_provider_version }}/linux_amd64"
+    terraform_version: "1.7.3"
 
     packages:
-      - docker.io
-      - docker-compose
       - jq
       - qemu
       - qemu-kvm
@@ -18,6 +13,7 @@
       - bridge-utils
       - virt-manager
       - cloud-image-utils
+      - docker
 
   tasks:
   - name: Install packages
@@ -58,7 +54,7 @@
     when: qemu.changed
     
   - name: Add existing user '{{ user_id }}' to groups
-    user: name={{ user_id }} groups=docker,libvirt,libvirtd,libvirt-qemu,libvirt-qemu,libvirt-dnsmasq append=yes
+    user: name={{ user_id }} groups=libvirt,libvirt-qemu,libvirt-qemu,libvirt-dnsmasq append=yes
     become: yes
 
   - name: Install terraform
@@ -70,13 +66,3 @@
       group: root
       mode: 0755
     become: yes
-
-  - name: Create libvirt provider directory
-    file: path={{ libvirt_provider_dest }} state=directory
-
-  - name: Install libvirt provider
-    unarchive:
-      src: "{{ libvirt_provider_url }}"
-      dest: "{{ libvirt_provider_dest }}"
-      remote_src: yes
-
